@@ -1,0 +1,7 @@
+transformers
+accelerate
+sentencepiece
+protobuf
+gradio
+psutil
+huggingface_hub
