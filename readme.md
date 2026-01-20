@@ -94,6 +94,8 @@ python app.py
 
 3. **Open your browser** at `http://127.0.0.1:7860`.
 
+> Alternatively, you can simply use the "start_z_image_lokal_gui.bat" file
+
 > **Note:** On the first run, the model (~6GB) will be downloaded automatically from Hugging Face.
 
 ---
