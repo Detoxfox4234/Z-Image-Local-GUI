@@ -10,12 +10,15 @@ from huggingface_hub import snapshot_download
 # --- CONFIGURATION ---
 MODEL_ID = "Tongyi-MAI/Z-Image-Turbo"
 LOCAL_MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_cache")
+LORA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "loras")
 OUTPUT_DIR = "outputs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(LORA_DIR, exist_ok=True)
 
 # --- GLOBAL VARIABLES ---
 pipe = None
 device = "cuda" if torch.cuda.is_available() else "cpu"
+current_lora = None
 
 # --- LOAD MODEL ---
 def load_model():
@@ -86,7 +89,47 @@ def get_system_stats():
     </div>
     """
 
-def generate_image(prompt, steps, seed, width, height):
+def get_available_loras():
+    """Scans the loras/ folder for .safetensors files."""
+    loras = ["None"]
+    if os.path.exists(LORA_DIR):
+        for f in sorted(os.listdir(LORA_DIR)):
+            if f.endswith(".safetensors"):
+                loras.append(f)
+    return loras
+
+def apply_lora(lora_name, lora_weight):
+    """Loads or unloads a LoRA based on the current selection."""
+    global pipe, current_lora
+    if pipe is None:
+        return
+
+    # Unload if "None" selected or different LoRA
+    if lora_name == "None" or not lora_name:
+        if current_lora is not None:
+            pipe.unload_lora_weights()
+            current_lora = None
+            print("🔄 LoRA unloaded.")
+        return
+
+    # Load new LoRA if changed
+    lora_path = os.path.join(LORA_DIR, lora_name)
+    if not os.path.exists(lora_path):
+        print(f"❌ LoRA file not found: {lora_path}")
+        return
+
+    if current_lora != lora_name:
+        if current_lora is not None:
+            pipe.unload_lora_weights()
+        print(f"⏳ Loading LoRA: {lora_name}...")
+        pipe.load_lora_weights(LORA_DIR, weight_name=lora_name, adapter_name="active")
+        current_lora = lora_name
+        print(f"✅ LoRA loaded: {lora_name}")
+
+    # Always update the weight
+    pipe.set_adapters(["active"], adapter_weights=[float(lora_weight)])
+
+def generate_image(prompt, steps, seed, width, height, lora_name, lora_weight):
     global pipe
     if pipe is None:
         return None, "Error: Model not loaded!"
@@ -97,7 +140,14 @@ def generate_image(prompt, steps, seed, width, height):
     if seed == -1:
         seed = random.randint(0, 2147483647)
 
-    print(f"🎨 Gen: '{prompt}' | Steps: {steps} | Seed: {seed}")
+    # Apply LoRA before generation
+    try:
+        apply_lora(lora_name, lora_weight)
+    except Exception as e:
+        return None, f"Error loading LoRA: {e}"
+
+    lora_info = f" | LoRA: {lora_name} ({lora_weight})" if lora_name and lora_name != "None" else ""
+    print(f"🎨 Gen: '{prompt}' | Steps: {steps} | Seed: {seed}{lora_info}")
 
     generator = torch.Generator(device=device).manual_seed(int(seed))
 
@@ -123,7 +173,7 @@ def generate_image(prompt, steps, seed, width, height):
 
         image.save(save_path)
         torch.cuda.empty_cache()
-        return image, f"✅ Done in {duration:.2f}s! Seed: {seed}"
+        return image, f"✅ Done in {duration:.2f}s! Seed: {seed}{lora_info}"
 
     except Exception as e:
         torch.cuda.empty_cache()
@@ -473,6 +523,22 @@ with gr.Blocks(title="Z-Image-Turbo Local") as demo:
                     width = gr.Slider(minimum=512, maximum=2048, value=1024, step=64, label="Width")
                     height = gr.Slider(minimum=512, maximum=2048, value=1024, step=64, label="Height")
 
+            with gr.Accordion("🎨 LoRA (Optional)", open=False):
+                with gr.Row():
+                    lora_dropdown = gr.Dropdown(
+                        choices=get_available_loras(),
+                        value="None",
+                        label="LoRA File",
+                        scale=3
+                    )
+                    lora_refresh_btn = gr.Button("🔄", scale=0, min_width=50)
+                lora_weight = gr.Slider(minimum=0.0, maximum=2.0, value=1.0, step=0.05, label="LoRA Weight")
+                gr.Markdown(
+                    "<span style='font-size:12px; color:rgba(255,255,255,0.4);'>"
+                    "Place .safetensors files in the <code>loras/</code> folder and click 🔄 to refresh."
+                    "</span>"
+                )
+
             generate_btn = gr.Button("⚡ GENERATE IMAGE", elem_classes="generate-btn")
 
             with gr.Row():
@@ -513,8 +579,13 @@ with gr.Blocks(title="Z-Image-Turbo Local") as demo:
 
     generate_btn.click(
         fn=generate_image,
-        inputs=[prompt, steps, seed, width, height],
+        inputs=[prompt, steps, seed, width, height, lora_dropdown, lora_weight],
         outputs=[output_img, status_text]
+    )
+
+    lora_refresh_btn.click(
+        fn=lambda: gr.update(choices=get_available_loras()),
+        outputs=lora_dropdown
     )
 
     open_folder_btn.click(fn=open_output_folder)

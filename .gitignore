@@ -209,4 +209,5 @@ __marimo__/
 outputs/
 python_env/
 model_cache/
+loras/
 .claude/
