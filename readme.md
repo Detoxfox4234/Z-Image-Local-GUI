@@ -19,6 +19,7 @@ A lightning-fast local Gradio Web-UI for the Z-Image-Turbo model. Generate photo
 - 💾 **Auto-Save**: Results are automatically saved to the `outputs` folder.
 - 📂 **Quick Access**: Open the output folder directly from the UI.
 - 🛄 **Local Model Cache**: Model is downloaded once to `model_cache/` — no internet needed after first run.
+- 🎨 **LoRA Support**: Load custom LoRA styles on-the-fly! Drop any `.safetensors` LoRA into the `loras/` folder and activate it with a single click — no restart required. Fine-tune your output with adjustable LoRA weights from 0.0 to 2.0.
 
 ---
 
@@ -50,6 +51,22 @@ No system Python and no virtual environment required.
 
 ---
 
+## 🎨 LoRA — Custom Styles & Fine-Tuning
+
+LoRAs let you push your image generation into completely new directions — unique art styles, specific characters, hyper-detailed textures, or cinematic looks. All without retraining the base model.
+
+**How to use:**
+
+1. Download any compatible `.safetensors` LoRA file (e.g. from [Civitai](https://civitai.com/) or [Hugging Face](https://huggingface.co/)).
+2. Drop it into the `loras/` folder.
+3. Open the **🎨 LoRA (Optional)** panel in the GUI.
+4. Click 🔄 to refresh the list, then select your LoRA.
+5. Adjust the **LoRA Weight** slider to control the effect strength (default: 1.0).
+
+Switch between LoRAs or turn them off at any time — no restart needed.
+
+---
+
 ## ⚙️ Recommended Settings
 
 - **Steps**: 4-8 steps is the sweet spot.
@@ -69,6 +86,7 @@ Z-Image-Local-GUI/
 ├── requirements.txt                # Python dependencies
 ├── python_env/                     # Isolated Python 3.11 (created by install.bat)
 ├── model_cache/                    # Z-Image-Turbo model (~30GB, downloaded on first run)
+├── loras/                          # Drop your .safetensors LoRA files here
 └── outputs/                        # Generated images (auto-created)
 ```
 
