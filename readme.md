@@ -65,6 +65,19 @@ LoRAs let you push your image generation into completely new directions — uniq
 
 Switch between LoRAs or turn them off at any time — no restart needed.
 
+### Same prompt — with and without LoRA:
+
+<table>
+<tr>
+<td align="center"><b>Without LoRA</b></td>
+<td align="center"><b>With LoRA (Anime Style)</b></td>
+</tr>
+<tr>
+<td><img src="preview2.png" width="400"/></td>
+<td><img src="preview3.png" width="400"/></td>
+</tr>
+</table>
+
 ---
 
 ## ⚙️ Recommended Settings
