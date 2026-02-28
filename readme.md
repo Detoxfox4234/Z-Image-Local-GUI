@@ -1,6 +1,6 @@
 ## Z-Image-Turbo Local GUI (Windows) ⚡
 
-A lightning-fast local Gradio Web-UI for the Z-Image-Turbo model. Generate photorealistic images in milliseconds using the power of your local GPU.
+A lightning-fast local Gradio Web-UI for the Z-Image-Turbo model. Generate photorealistic images in milliseconds using the power of your local GPU. With support for custom LoRAs.
 
 **Optimized for NVIDIA RTX 50-Series (Blackwell) & CUDA 13.0.**
 
