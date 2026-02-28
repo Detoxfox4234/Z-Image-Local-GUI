@@ -44,7 +44,7 @@ No system Python and no virtual environment required.
 ## 🚀 Usage
 
 1. Double-click `start_z_image_lokal_gui.bat`.
-2. On the **first run**, the model (~6GB) is downloaded directly into the `model_cache/` folder inside the project directory.
+2. On the **first run**, the model (~30GB) is downloaded directly into the `model_cache/` folder inside the project directory.
 3. On every **subsequent run**, the model loads instantly from the local cache — no internet connection required.
 4. The GUI will open automatically in your browser (usually `http://127.0.0.1:7860`).
 
@@ -68,7 +68,7 @@ Z-Image-Local-GUI/
 ├── start_z_image_lokal_gui.bat     # Launch script
 ├── requirements.txt                # Python dependencies
 ├── python_env/                     # Isolated Python 3.11 (created by install.bat)
-├── model_cache/                    # Z-Image-Turbo model (~6GB, downloaded on first run)
+├── model_cache/                    # Z-Image-Turbo model (~30GB, downloaded on first run)
 └── outputs/                        # Generated images (auto-created)
 ```
 
