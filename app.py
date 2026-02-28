@@ -91,7 +91,7 @@ def get_system_stats():
 
 def get_available_loras():
     """Scans the loras/ folder for .safetensors files."""
-    loras = ["None"]
+    loras = []
     if os.path.exists(LORA_DIR):
         for f in sorted(os.listdir(LORA_DIR)):
             if f.endswith(".safetensors"):
@@ -105,7 +105,7 @@ def apply_lora(lora_name, lora_weight):
         return
 
     # Unload if "None" selected or different LoRA
-    if lora_name == "None" or not lora_name:
+    if not lora_name or lora_name == "Off":
         if current_lora is not None:
             pipe.unload_lora_weights()
             current_lora = None
@@ -146,7 +146,7 @@ def generate_image(prompt, steps, seed, width, height, lora_name, lora_weight):
     except Exception as e:
         return None, f"Error loading LoRA: {e}"
 
-    lora_info = f" | LoRA: {lora_name} ({lora_weight})" if lora_name and lora_name != "None" else ""
+    lora_info = f" | LoRA: {lora_name} ({lora_weight})" if lora_name and lora_name != "Off" else ""
     print(f"🎨 Gen: '{prompt}' | Steps: {steps} | Seed: {seed}{lora_info}")
 
     generator = torch.Generator(device=device).manual_seed(int(seed))
@@ -363,7 +363,7 @@ input[type="range"] {
     background: rgba(255, 255, 255, 0.03) !important;
     border: 1px solid rgba(255, 255, 255, 0.06) !important;
     border-radius: 14px !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     transition: all 0.3s ease !important;
 }
 .gradio-accordion > .label-wrap {
@@ -525,10 +525,11 @@ with gr.Blocks(title="Z-Image-Turbo Local") as demo:
 
             with gr.Accordion("🎨 LoRA (Optional)", open=False):
                 with gr.Row():
-                    lora_dropdown = gr.Dropdown(
-                        choices=get_available_loras(),
-                        value="None",
+                    lora_radio = gr.Radio(
+                        choices=["Off"] + get_available_loras(),
+                        value="Off",
                         label="LoRA File",
+                        interactive=True,
                         scale=3
                     )
                     lora_refresh_btn = gr.Button("🔄", scale=0, min_width=50)
@@ -579,13 +580,13 @@ with gr.Blocks(title="Z-Image-Turbo Local") as demo:
 
     generate_btn.click(
         fn=generate_image,
-        inputs=[prompt, steps, seed, width, height, lora_dropdown, lora_weight],
+        inputs=[prompt, steps, seed, width, height, lora_radio, lora_weight],
         outputs=[output_img, status_text]
     )
 
     lora_refresh_btn.click(
-        fn=lambda: gr.update(choices=get_available_loras()),
-        outputs=lora_dropdown
+        fn=lambda: gr.update(choices=["Off"] + get_available_loras(), value="Off"),
+        outputs=lora_radio
     )
 
     open_folder_btn.click(fn=open_output_folder)
