@@ -1,5 +1,14 @@
 @echo off
-echo Starting Z-IMAGE Local GUI...
-call venv\Scripts\activate.bat
-python app.py
+title Z-Image-Turbo
+set PYTHONIOENCODING=utf-8
+echo Starting App...
+
+if not exist "python_env\python.exe" (
+    echo ERROR: Python environment not found!
+    echo Please run 'install.bat' first.
+    pause
+    exit
+)
+
+.\python_env\python.exe app.py
 pause
